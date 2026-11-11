@@ -11,8 +11,8 @@
  *   · 演示模式管理后台密码：admin888
  * ============================================================ */
 
-const SUPABASE_URL = "";        // 例：https://abcd1234.supabase.co
-const SUPABASE_ANON_KEY = "";   // 例：eyJhbGciOi...（很长的一串）
+const SUPABASE_URL = "https://luuriwsqjrvwvfmasjiz.supabase.co";  // 您的 Supabase 项目
+const SUPABASE_ANON_KEY = "sb_publishable_HMBruCUbWDNhXrbgtpfoQg__ANlDGVv";   // 公开密钥（publishable key）
 
 /* ---------- 以下为平台固定配置，一般无需修改 ---------- */
 

@@ -12,8 +12,9 @@ const DB = (function () {
    * ====================================================== */
   if (typeof SUPABASE_URL === 'string' && SUPABASE_URL && typeof SUPABASE_ANON_KEY === 'string' && SUPABASE_ANON_KEY) {
     const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const emailOf = (phone) => phone + '@panan.local';
-    const phoneOf = (email) => String(email || '').replace('@panan.local', '');
+    // 手机号转为占位邮箱（example.com 是国际保留测试域名，不投递邮件）
+    const emailOf = (phone) => phone + '@example.com';
+    const phoneOf = (email) => String(email || '').split('@')[0];
 
     async function uid() {
       const { data } = await client.auth.getSession();
