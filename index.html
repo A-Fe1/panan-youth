@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="磐城遇见——遇见有趣的磐安青年">
+  <title>磐城遇见</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍀</text></svg>">
+  <link rel="stylesheet" href="css/style.css?v=2">
+</head>
+<body>
+
+  <!-- 演示模式横幅 -->
+  <div id="demo-banner" class="demo-banner hidden">本地演示模式 · 数据仅存于当前浏览器 · 正式使用请配置 config.js</div>
+
+  <!-- 顶部栏 -->
+  <header id="app-header" class="app-header hidden">
+    <div class="header-inner">
+      <button id="header-back" class="header-btn hidden">‹ 返回</button>
+      <div id="header-title" class="header-title">磐城遇见</div>
+      <button id="header-action" class="header-btn header-action hidden"></button>
+    </div>
+  </header>
+
+  <main id="app-main">
+
+    <!-- ========== 登录页 ========== -->
+    <section id="view-login" class="view hidden">
+      <div class="auth-wrap">
+        <div class="auth-logo">🍀</div>
+        <h1 class="auth-title">磐城遇见</h1>
+        <p class="auth-sub">山水磐安 · 遇见有趣的年轻人</p>
+        <div class="card">
+          <div class="field">
+            <label>手机号</label>
+            <input id="login-phone" type="tel" maxlength="11" placeholder="请输入手机号" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label>密码</label>
+            <input id="login-password" type="password" maxlength="20" placeholder="请输入密码">
+          </div>
+          <button id="btn-login" class="btn btn-primary btn-block">登 录</button>
+          <div class="auth-links">
+            <a href="#/register">注册新账号</a>
+            <a href="#/forgot">忘记密码</a>
+          </div>
+        </div>
+        <p class="agreement-tip">登录即表示同意<a href="#/policy">《用户协议与隐私政策》</a></p>
+        <p class="admin-entry"><a href="#/admin">管理员入口</a></p>
+      </div>
+    </section>
+
+    <!-- ========== 注册页 ========== -->
+    <section id="view-register" class="view hidden">
+      <div class="page">
+        <h2 class="page-title">注册账号</h2>
+        <div class="card">
+          <div class="field">
+            <label>手机号</label>
+            <input id="reg-phone" type="tel" maxlength="11" placeholder="11位手机号" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label>设置密码</label>
+            <input id="reg-password" type="password" maxlength="20" placeholder="6-20位，建议字母+数字">
+          </div>
+          <div class="field">
+            <label>确认密码</label>
+            <input id="reg-password2" type="password" maxlength="20" placeholder="再输入一次密码">
+          </div>
+          <div class="field">
+            <label>密保问题（用于找回密码）</label>
+            <input id="reg-secq" type="text" maxlength="30" placeholder="例：我最喜欢的电影是什么？">
+          </div>
+          <div class="field">
+            <label>密保答案</label>
+            <input id="reg-seca" type="text" maxlength="30" placeholder="答案要自己记得住、别人猜不到">
+          </div>
+          <label class="check-line">
+            <input id="reg-agree" type="checkbox">
+            <span>我已阅读并同意<a href="#/policy">《用户协议与隐私政策》</a></span>
+          </label>
+          <button id="btn-register" class="btn btn-primary btn-block">注 册</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 忘记密码页 ========== -->
+    <section id="view-forgot" class="view hidden">
+      <div class="page">
+        <h2 class="page-title">找回密码</h2>
+        <div id="forgot-step1" class="card">
+          <div class="field">
+            <label>第一步：输入注册手机号</label>
+            <input id="fg-phone" type="tel" maxlength="11" placeholder="11位手机号" inputmode="numeric">
+          </div>
+          <button id="btn-fg-phone" class="btn btn-primary btn-block">下一步</button>
+        </div>
+        <div id="forgot-step2" class="card hidden">
+          <div class="field">
+            <label>第二步：回答密保问题</label>
+            <p id="fg-question" class="secq-question"></p>
+            <input id="fg-answer" type="text" maxlength="30" placeholder="请输入密保答案">
+          </div>
+          <button id="btn-fg-answer" class="btn btn-primary btn-block">验证身份</button>
+        </div>
+        <div id="forgot-step3" class="card hidden">
+          <div class="ok-icon">✅</div>
+          <p class="fg-ok">身份验证成功！</p>
+          <p class="fg-tip">为保护账号安全，请凭上述手机号联系<br><b id="fg-admin-contact"></b><br>由管理员为您重置新密码。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 发现页（匹配列表） ========== -->
+    <section id="view-discover" class="view hidden">
+      <div class="page">
+        <div id="my-hobbies-bar" class="hobbies-bar"></div>
+        <div id="discover-list" class="discover-list"></div>
+        <div id="discover-empty" class="empty hidden"></div>
+      </div>
+    </section>
+
+    <!-- ========== 他人资料卡 ========== -->
+    <section id="view-detail" class="view hidden">
+      <div class="page">
+        <div id="detail-body"></div>
+      </div>
+    </section>
+
+    <!-- ========== 消息页（招呼/朋友） ========== -->
+    <section id="view-greetings" class="view hidden">
+      <div class="page">
+        <div class="tab-strip">
+          <button class="tab-btn active" data-gtab="received">收到的招呼</button>
+          <button class="tab-btn" data-gtab="sent">我发出的</button>
+          <button class="tab-btn" data-gtab="friends">我的朋友</button>
+        </div>
+        <div id="greet-list"></div>
+        <div id="greet-empty" class="empty hidden"></div>
+      </div>
+    </section>
+
+    <!-- ========== 我的（资料卡查看） ========== -->
+    <section id="view-profile" class="view hidden">
+      <div class="page">
+        <div id="profile-body"></div>
+      </div>
+    </section>
+
+    <!-- ========== 资料编辑页 ========== -->
+    <section id="view-edit" class="view hidden">
+      <div class="page">
+        <div id="edit-body"></div>
+      </div>
+    </section>
+
+    <!-- ========== 管理后台 ========== -->
+    <section id="view-admin" class="view hidden">
+      <div class="page">
+        <div id="admin-login" class="card">
+          <h2 class="page-title">管理员登录</h2>
+          <div class="field">
+            <label>管理密码</label>
+            <input id="admin-key" type="password" placeholder="请输入管理密码">
+          </div>
+          <button id="btn-admin-login" class="btn btn-primary btn-block">进入管理后台</button>
+        </div>
+        <div id="admin-panel" class="hidden"></div>
+      </div>
+    </section>
+
+    <!-- ========== 用户协议与隐私政策 ========== -->
+    <section id="view-policy" class="view hidden">
+      <div class="page">
+        <div id="policy-body" class="card policy-card"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底部导航 -->
+  <nav id="app-tabbar" class="tabbar hidden">
+    <a class="tab-item" href="#/discover"><span class="tab-ico">🔍</span><span>发现</span></a>
+    <a class="tab-item" href="#/greetings"><span class="tab-ico">💬</span><span>消息</span></a>
+    <a class="tab-item" href="#/profile"><span class="tab-ico">👤</span><span>我的</span></a>
+  </nav>
+
+  <!-- 弹窗 -->
+  <div id="modal-mask" class="modal-mask hidden">
+    <div id="modal-box" class="modal-box"></div>
+  </div>
+
+  <script src="js/config.js?v=2"></script>
+  <script src="js/vendor/supabase.js?v=2"></script>
+  <script src="js/util.js?v=2"></script>
+  <script src="js/db.js?v=2"></script>
+  <script src="js/auth.js?v=2"></script>
+  <script src="js/profile.js?v=2"></script>
+  <script src="js/discover.js?v=2"></script>
+  <script src="js/greetings.js?v=2"></script>
+  <script src="js/admin.js?v=2"></script>
+  <script src="js/policy.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
+</body>
+</html>
