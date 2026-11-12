@@ -117,35 +117,77 @@ function dataUrlToBlob(dataUrl) {
   return new Blob([arr], { type: mime });
 }
 
-/* ---------- 照片压缩 ---------- */
-/* 返回 { blob, dataUrl }，自动缩放+压缩为 JPEG */
+/* 传统解码路径：FileReader + Image（兼容旧浏览器，Safari 也能解码 HEIC 照片） */
+function legacyDecodeImage(file, onOk, onFail) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => onOk(img);
+    img.onerror = () => onFail(new Error('图片读取失败，请换一张试试'));
+    img.src = reader.result;
+  };
+  reader.onerror = () => onFail(new Error('图片读取失败，请换一张试试'));
+  reader.readAsDataURL(file);
+}
+
+/* ---------- 照片压缩（iOS 加固版） ----------
+ * iPhone Safari 处理大照片（尤其 1200 万像素）时，
+ * canvas 偶尔输出空数据导致上传报 no content provided。
+ * 策略：优先 createImageBitmap（更省内存）→ 逐级缩小尺寸重试 3 次
+ * → toBlob 失败时用 dataUrl 手动构造 → 全部失败才报错。
+ */
 function compressImage(file, maxEdge = PHOTO_MAX_EDGE, quality = PHOTO_QUALITY) {
-  return new Promise((resolve, reject) => {
-    if (!file.type.startsWith('image/')) { reject(new Error('请选择图片文件')); return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-        const scale = Math.min(1, maxEdge / Math.max(width, height));
-        width = Math.round(width * scale);
-        height = Math.round(height * scale);
-        const canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        canvas.toBlob(b => {
-          // 兜底：某些手机浏览器 toBlob 返回空或无类型，用 dataUrl 手动构造
-          const blob = (b && b.size > 0) ? b : dataUrlToBlob(dataUrl);
+  if (!file.type.startsWith('image/')) {
+    return Promise.reject(new Error('请选择图片文件'));
+  }
+
+  const oneAttempt = (edge) => new Promise((resolve, reject) => {
+    let settled = false;   // 防止超时兜底与正常回调重复结算
+    const finish = (src) => {
+      let w = src.width, h = src.height;
+      const scale = Math.min(1, edge / Math.max(w, h));
+      w = Math.round(w * scale); h = Math.round(h * scale);
+      if (w < 1 || h < 1) { if (!settled) { settled = true; reject(new Error('compress_failed')); } return; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(src, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      const ok = (blob) => {
+        if (settled) return;
+        settled = true;
+        if (blob && blob.size > 500 && dataUrl.length > 100) {
           resolve({ blob, dataUrl });
-        }, 'image/jpeg', quality);
+        } else {
+          reject(new Error('compress_failed'));
+        }
       };
-      img.onerror = () => reject(new Error('图片读取失败'));
-      img.src = reader.result;
+      canvas.toBlob(b => ok(b && b.size > 0 ? b : null), 'image/jpeg', quality);
+      // iOS 部分 webview（QQ/微信内置浏览器）的 toBlob 回调可能永远不触发：
+      // 3 秒超时后用 dataUrl 手工构造兜底，保证不会无声卡死
+      setTimeout(() => {
+        if (settled) return;
+        try { ok(dataUrlToBlob(dataUrl)); } catch (e) { ok(null); }
+      }, 3000);
     };
-    reader.onerror = () => reject(new Error('图片读取失败'));
-    reader.readAsDataURL(file);
+    if (window.createImageBitmap) {
+      createImageBitmap(file).then(finish).catch(() => legacyDecodeImage(file, finish, reject));
+    } else {
+      legacyDecodeImage(file, finish, reject);
+    }
   });
+
+  return oneAttempt(maxEdge)
+    .catch(e => {
+      if (e.message === 'compress_failed') return oneAttempt(Math.round(maxEdge * 0.6));
+      throw e;
+    })
+    .catch(e => {
+      if (e.message === 'compress_failed') return oneAttempt(480);
+      throw e;
+    })
+    .catch(() => {
+      throw new Error('图片处理失败，请换一张照片，或用相机重新拍一张试试');
+    });
 }
 
 /* ---------- 演示模式小工具 ---------- */
