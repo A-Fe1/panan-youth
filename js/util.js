@@ -107,6 +107,16 @@ function randomHex(n = 16) {
   return [...a].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+/* dataUrl 手动转为 Blob（部分手机浏览器 canvas.toBlob 异常时的兜底） */
+function dataUrlToBlob(dataUrl) {
+  const parts = dataUrl.split(',');
+  const mime = (parts[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
+  const bin = atob(parts[1] || '');
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
 /* ---------- 照片压缩 ---------- */
 /* 返回 { blob, dataUrl }，自动缩放+压缩为 JPEG */
 function compressImage(file, maxEdge = PHOTO_MAX_EDGE, quality = PHOTO_QUALITY) {
@@ -124,7 +134,11 @@ function compressImage(file, maxEdge = PHOTO_MAX_EDGE, quality = PHOTO_QUALITY) 
         canvas.width = width; canvas.height = height;
         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        canvas.toBlob(b => resolve({ blob: b, dataUrl }), 'image/jpeg', quality);
+        canvas.toBlob(b => {
+          // 兜底：某些手机浏览器 toBlob 返回空或无类型，用 dataUrl 手动构造
+          const blob = (b && b.size > 0) ? b : dataUrlToBlob(dataUrl);
+          resolve({ blob, dataUrl });
+        }, 'image/jpeg', quality);
       };
       img.onerror = () => reject(new Error('图片读取失败'));
       img.src = reader.result;

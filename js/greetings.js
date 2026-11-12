@@ -70,10 +70,10 @@ const Greetings = {
       };
       const [stCls, stText] = statusMap[g.status] || ['st-pending', '待回应'];
 
-      /* 操作按钮：收到且待回应 → 回应/婉拒；朋友 tab → 查看微信 */
-      let btns = '';
+      /* 操作按钮：所有招呼都可查看对方资料；收到且待回应 → 回应/婉拒 */
+      let btns = `<button class="btn btn-ghost btn-sm" data-viewfriend="${otherId}">查看资料</button>`;
       if (isReceived && g.status === 'pending') {
-        btns = `
+        btns += `
           <button class="btn btn-primary btn-sm" data-respond="${g.id}" data-st="matched">👍 回个招呼</button>
           <button class="btn btn-ghost btn-sm" data-respond="${g.id}" data-st="declined">婉拒</button>`;
       }
@@ -101,7 +101,7 @@ const Greetings = {
       if (respBtn) {
         const st = respBtn.dataset.st;
         if (st === 'declined') {
-          confirmBox('婉拒招呼', '确定婉拒这个招呼吗？婉拒后对方不会知道（其招呼显示"待回应"→"已婉拒"仅您可见）。', async () => {
+          confirmBox('婉拒招呼', '确定婉拒这个招呼吗？婉拒后双方都会显示「已婉拒」。', async () => {
             await DB.greetings.respond(respBtn.dataset.respond, 'declined');
             toast('已婉拒');
             this._renderList();

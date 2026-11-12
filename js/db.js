@@ -167,7 +167,18 @@ const DB = (function () {
         async upload(blob) {
           const u = await uid(); if (!u) throw new Error('请先登录');
           const path = `${u}/${Date.now()}_${randomHex(4)}.jpg`;
-          const { error } = await client.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' });
+          // 规范化：部分手机浏览器传来的 blob 缺少类型标识（导致 no content provided），
+          // 统一重新包装为带类型的 JPEG
+          let safeBlob = blob;
+          if (!safeBlob || !safeBlob.size) throw new Error('图片处理失败，请重试');
+          if (!safeBlob.type || safeBlob.type !== 'image/jpeg') {
+            const buf = await new Response(safeBlob).arrayBuffer();
+            safeBlob = new Blob([buf], { type: 'image/jpeg' });
+          }
+          const { error } = await client.storage.from('photos').upload(path, safeBlob, {
+            contentType: 'image/jpeg',
+            upsert: true
+          });
           if (error) throw error;
           return path;
         },
