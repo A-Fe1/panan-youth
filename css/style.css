@@ -29,6 +29,7 @@ body {
   max-width: 480px;
   margin: 0 auto;
   box-shadow: 0 0 24px rgba(0,0,0,.05);
+  overflow-x: hidden;   /* 防止个别内容把页面撑宽 */
 }
 
 a { color: var(--primary); text-decoration: none; }
@@ -85,7 +86,7 @@ main { padding-bottom: 76px; }
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 11px 12px;
-  font-size: .95rem;
+  font-size: 16px;   /* ≥16px 防止 iPhone 聚焦输入时整页自动放大 */
   background: #fbfcfd;
   outline: none;
   transition: border .15s;
@@ -277,7 +278,7 @@ main { padding-bottom: 76px; }
   padding: 7px 11px; margin-bottom: 10px;
 }
 .hobby-input-row { display: flex; gap: 8px; margin-bottom: 9px; }
-.hobby-input-row input { flex: 1; }
+.hobby-input-row input { flex: 1; font-size: 16px; }
 .hobby-add-btn {
   background: var(--primary); color: #fff;
   font-size: .95rem; font-weight: 700;
@@ -415,3 +416,24 @@ main { padding-bottom: 76px; }
   cursor: zoom-out;
 }
 .img-viewer img { max-width: 96vw; max-height: 92vh; }
+
+/* ============================================================
+   桌面端适配（屏幕宽度 ≥768px 时自动启用）
+   手机端布局不变；电脑上页面变宽、发现页双列展示
+   ============================================================ */
+@media (min-width: 768px) {
+  body { max-width: 900px; }
+  .header-inner, .tabbar { max-width: 900px; }
+  main { padding-bottom: 96px; }
+
+  /* 表单类页面居中收窄，阅读舒适 */
+  .page { max-width: 620px; margin: 0 auto; padding: 24px 16px 30px; }
+  #view-discover .page { max-width: 900px; }
+
+  /* 发现页双列卡片 */
+  .discover-list { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .profile-card { margin-bottom: 0; }
+
+  /* 登录页居中 */
+  .auth-wrap { max-width: 460px; margin: 0 auto; padding-top: 60px; }
+}
